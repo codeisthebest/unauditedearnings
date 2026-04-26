@@ -96,7 +96,7 @@ def filter_self_reports(items: list[dict]) -> list[dict]:
     """只保留含自結關鍵字的公告。"""
     results = []
     for item in items:
-        subject = item.get("主旨") or item.get("Subject") or ""
+        subject = item.get("主旨") or item.get("主旨 ") or item.get("Subject") or ""
         content = item.get("說明") or item.get("Content") or ""
         combined = f"{subject} {content}"
 
@@ -111,7 +111,7 @@ def filter_self_reports(items: list[dict]) -> list[dict]:
             "公司代號":   item.get("SecuritiesCompanyCode") or item.get("公司代號") or "",
             "公司名稱":   item.get("CompanyName") or item.get("公司名稱") or extract_company_name(content),
             "出表日期":   date,
-            "主旨":       subject.strip(),
+            "主旨":       subject.replace("\r\n", " ").replace("\n", " ").strip(),
             "說明":       content.strip(),
             "類型":       matched,
             "市場":       item.get("__market__", ""),
