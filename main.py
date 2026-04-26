@@ -1,19 +1,19 @@
 """
 台灣股市自結公告 AI 分析器
-每日自動抓取上市/上櫃自結公告，透過 Claude 分析後傳送至 Telegram 與 Gmail。
+每日自動抓取上市/上櫃自結公告，透過 Gemini 分析後傳送至 Telegram 與 Gmail。
 """
 
 import os
 import re
 import smtplib
 import requests
-import anthropic
+import google.generativeai as genai
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # ── 設定 ──────────────────────────────────────────────────────────────────────
-ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID   = os.environ["TELEGRAM_CHAT_ID"]
 GMAIL_USER         = os.environ["GMAIL_USER"]          # 寄件人 Gmail
@@ -163,25 +163,19 @@ def build_ai_input(reports: list[dict]) -> str:
     return "\n\n".join(parts)
 
 
-# ── 4. 呼叫 Claude ─────────────────────────────────────────────────────────────
+# ── 4. 呼叫 Gemini ─────────────────────────────────────────────────────────────
 
-def analyze_with_claude(ai_input: str) -> str:
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=8192,
-        system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    "請分析下列公告資料，並依上述規則與格式產出簡潔、明確、具驗證依據的分析報告：\n\n"
-                    + ai_input
-                ),
-            }
-        ],
+def analyze_with_gemini(ai_input: str) -> str:
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name="models/gemini-2.5-flash",
+        system_instruction=SYSTEM_PROMPT,
     )
-    return message.content[0].text
+    response = model.generate_content(
+        "請分析下列公告資料，並依上述規則與格式產出簡潔、明確、具驗證依據的分析報告：\n\n"
+        + ai_input
+    )
+    return response.text
 
 
 # ── 5. 傳送 Telegram ───────────────────────────────────────────────────────────
@@ -244,7 +238,7 @@ def main():
     ai_input = build_ai_input(reports)
     print(f"[claude] 送出 {len(reports)} 筆，輸入長度 {len(ai_input)} 字元")
 
-    result_html = analyze_with_claude(ai_input)
+    result_html = analyze_with_gemini(ai_input)
     print("[claude] 分析完成")
 
     send_telegram(result_html, date_str)
