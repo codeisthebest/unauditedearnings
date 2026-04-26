@@ -1,6 +1,6 @@
 # 台灣股市自結公告 AI 分析器
 
-每日自動抓取上市 / 上櫃自結公告，透過 **Gemini 2.5 Flash** 分析後發送至 **Telegram** 與 **Gmail**。
+每日自動抓取上市 / 上櫃自結公告，透過 **Gemini 2.5 Flash** 分析後發送至 **Telegram**。
 
 ---
 
@@ -10,7 +10,7 @@
 - 同時抓取 TWSE（上市）與 TPEX（上櫃）重大公告
 - 過濾出含「自結」關鍵字的公告
 - 呼叫 Gemini 2.5 Flash API 產出 HTML 格式投資評分報告
-- 透過 Telegram Bot 與 Gmail 發送報告
+- 透過 Telegram Bot 發送報告
 
 ---
 
@@ -31,9 +31,6 @@ git clone <your-repo-url>
 | `GEMINI_API_KEY` | Gemini API 金鑰（從 [aistudio.google.com/apikey](https://aistudio.google.com/apikey) 免費取得） |
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（向 @BotFather 申請） |
 | `TELEGRAM_CHAT_ID` | 你的 Telegram Chat ID（向 @userinfobot 查詢） |
-| `GMAIL_USER` | 寄件人 Gmail 帳號（例：yourname@gmail.com） |
-| `GMAIL_APP_PASSWORD` | Gmail 應用程式密碼（非登入密碼，需開啟兩步驟驗證後申請） |
-| `GMAIL_TO` | 收件人信箱 |
 
 #### Gmail 應用程式密碼申請方式
 1. 前往 Google 帳戶 → 安全性 → 兩步驟驗證（先開啟）
@@ -58,9 +55,6 @@ pip install -r requirements.txt
 export GEMINI_API_KEY="AIza..."
 export TELEGRAM_BOT_TOKEN="..."
 export TELEGRAM_CHAT_ID="..."
-export GMAIL_USER="..."
-export GMAIL_APP_PASSWORD="..."
-export GMAIL_TO="..."
 
 python main.py
 ```

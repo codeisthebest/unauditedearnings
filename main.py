@@ -1,24 +1,18 @@
 """
 台灣股市自結公告 AI 分析器
-每日自動抓取上市/上櫃自結公告，透過 Gemini 分析後傳送至 Telegram 與 Gmail。
+每日自動抓取上市/上櫃自結公告，透過 Gemini 分析後傳送至 Telegram。
 """
 
 import os
 import re
-import smtplib
 import requests
 import google.generativeai as genai
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 # ── 設定 ──────────────────────────────────────────────────────────────────────
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_API_KEY     = os.environ["GEMINI_API_KEY"]
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID   = os.environ["TELEGRAM_CHAT_ID"]
-GMAIL_USER         = os.environ["GMAIL_USER"]          # 寄件人 Gmail
-GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]  # Gmail 應用程式密碼
-GMAIL_TO           = os.environ["GMAIL_TO"]            # 收件人信箱
 
 # 自結關鍵字（主旨 + 說明 含其一即算命中）
 KEYWORDS = [
@@ -203,22 +197,6 @@ def send_telegram(text: str, date_str: str) -> None:
             print("[telegram] 傳送成功")
 
 
-# ── 6. 傳送 Gmail ──────────────────────────────────────────────────────────────
-
-def send_gmail(html_content: str, date_str: str) -> None:
-    subject = f"{date_str} - AI 上市、櫃自結分析報告"
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = GMAIL_USER
-    msg["To"]      = GMAIL_TO
-    msg.attach(MIMEText(html_content, "html", "utf-8"))
-
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-        server.sendmail(GMAIL_USER, GMAIL_TO, msg.as_string())
-    print("[gmail] 傳送成功")
-
-
 # ── 主程式 ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -229,20 +207,17 @@ def main():
     reports = filter_self_reports(raw)
 
     if not reports:
-        no_data_msg = "<p>今天沒有自結相關公告。</p>"
         send_telegram("今天沒有自結相關公告。", date_str)
-        send_gmail(no_data_msg, date_str)
         print("[done] 無自結公告，已發送通知。")
         return
 
     ai_input = build_ai_input(reports)
-    print(f"[claude] 送出 {len(reports)} 筆，輸入長度 {len(ai_input)} 字元")
+    print(f"[gemini] 送出 {len(reports)} 筆，輸入長度 {len(ai_input)} 字元")
 
     result_html = analyze_with_gemini(ai_input)
-    print("[claude] 分析完成")
+    print("[gemini] 分析完成")
 
     send_telegram(result_html, date_str)
-    send_gmail(result_html, date_str)
     print("[done] 全部完成。")
 
 
