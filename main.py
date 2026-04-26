@@ -4,7 +4,7 @@
 """
 
 import os
-import re
+import re  # 用於 extract_company_name
 import requests
 import google.generativeai as genai
 from datetime import datetime
@@ -23,31 +23,23 @@ KEYWORDS = [
 SYSTEM_PROMPT = """你是一位專業的台灣股票分析師。請根據以下公告內容，提供簡潔明瞭、具邏輯與可驗證的投資評分報告。
 
 【輸出格式（務必遵守）】
-請「只輸出」一個 HTML 區塊（不要使用 Markdown、不要使用```）。請用 <table> 產生表格，並含 <thead> 與 <tbody>。
-表格欄位依序為：公司名稱、公司代號、評分等級、關鍵財數、評分理由、風險提醒、資料來源(附註上市或是上櫃)、驗證依據。
+純文字格式，不使用 HTML、不使用 Markdown。每家公司用以下固定結構輸出，欄位之間換行：
 
-請務必使用純 HTML，並加上簡單的 inline style，範例如下（請照此結構輸出）：
-<table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:14px;">
-  <thead>
-    <tr>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">公司名稱</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">公司代號</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">評分等級</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">關鍵財數</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">評分理由</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">風險提醒</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">資料來源</th>
-      <th style="border:1px solid #ddd;background:#f6f7f8;padding:8px;">驗證依據</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- 每家公司一列 -->
-  </tbody>
-</table>
+評分等級：（emoji + 文字）
+公司名稱：
+公司代號：
+市場：（上市 or 上櫃）
+關鍵財數：
+評分理由：
+風險提醒：
+驗證依據：
+──────────────
 
-表格後面請附上兩段 <p>：
-1) <p><b>整體市場觀察：</b>…（不超過 4 行）</p>
-2) <p><i>投資風險聲明：本分析僅供參考，並非投資建議。股票投資具風險，請審慎評估自身風險承受能力。</i></p>
+所有公司輸出完後，附上：
+【整體市場觀察】
+（不超過 4 行）
+
+投資風險聲明：本分析僅供參考，並非投資建議。股票投資具風險，請審慎評估自身風險承受能力。
 
 【評分機制】
 - 🔴 營收大漲：營收大幅成長且獲利顯著改善、虧轉盈或 EPS 大幅提升
@@ -175,10 +167,7 @@ def analyze_with_gemini(ai_input: str) -> str:
 # ── 5. 傳送 Telegram ───────────────────────────────────────────────────────────
 
 def send_telegram(text: str, date_str: str) -> None:
-    """Telegram 只支援純文字，移除 HTML 標籤後傳送。"""
-    plain = re.sub(r"<[^>]+>", "", text)
-    plain = re.sub(r"\n{3,}", "\n\n", plain).strip()
-    msg = f"{date_str} - AI 上市、櫃自結分析報告\n\n{plain}"
+    msg = f"{date_str} - AI 上市、櫃自結分析報告\n\n{text.strip()}"
 
     # Telegram 訊息上限 4096 字，超過切割
     max_len = 4000
