@@ -1,6 +1,6 @@
 # 台灣股市自結公告 AI 分析器
 
-每日自動抓取上市 / 上櫃自結公告，透過 **Claude** 分析後發送至 **Telegram** 與 **Gmail**。
+每日自動抓取上市 / 上櫃自結公告，透過 **Gemini 2.5 Flash** 分析後發送至 **Telegram** 與 **Gmail**。
 
 ---
 
@@ -9,7 +9,7 @@
 - 每天 07:30（台灣時間）自動執行
 - 同時抓取 TWSE（上市）與 TPEX（上櫃）重大公告
 - 過濾出含「自結」關鍵字的公告
-- 呼叫 Claude API 產出 HTML 格式投資評分報告
+- 呼叫 Gemini 2.5 Flash API 產出 HTML 格式投資評分報告
 - 透過 Telegram Bot 與 Gmail 發送報告
 
 ---
@@ -28,7 +28,7 @@ git clone <your-repo-url>
 
 | Secret 名稱 | 說明 |
 |---|---|
-| `ANTHROPIC_API_KEY` | Claude API 金鑰（從 [console.anthropic.com](https://console.anthropic.com) 取得） |
+| `GEMINI_API_KEY` | Gemini API 金鑰（從 [aistudio.google.com/apikey](https://aistudio.google.com/apikey) 免費取得） |
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（向 @BotFather 申請） |
 | `TELEGRAM_CHAT_ID` | 你的 Telegram Chat ID（向 @userinfobot 查詢） |
 | `GMAIL_USER` | 寄件人 Gmail 帳號（例：yourname@gmail.com） |
@@ -55,7 +55,7 @@ Actions → **每日自結公告分析** → **Run workflow** 即可立即觸發
 ```bash
 pip install -r requirements.txt
 
-export ANTHROPIC_API_KEY="sk-ant-..."
+export GEMINI_API_KEY="AIza..."
 export TELEGRAM_BOT_TOKEN="..."
 export TELEGRAM_CHAT_ID="..."
 export GMAIL_USER="..."
